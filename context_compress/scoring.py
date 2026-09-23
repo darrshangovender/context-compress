@@ -29,8 +29,7 @@ _TOKEN_RE = re.compile(r"[a-z0-9]+")
 #: aggressive stoplist hurts on technical text where "not", "all", "between"
 #: change meaning materially.
 _STOP = frozenset(
-    "a an the is are was were be been being of to in on at for with by from as "
-    "and or but if then than that this these those it its i you he she they we".split()
+    ["a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "of", "to", "in", "on", "at", "for", "with", "by", "from", "as", "and", "or", "but", "if", "then", "than", "that", "this", "these", "those", "it", "its", "i", "you", "he", "she", "they", "we"]
 )
 
 
