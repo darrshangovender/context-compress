@@ -8,11 +8,11 @@ from context_compress.strategies.topk import TopKStrategy
 from context_compress.strategies.truncate import TruncateStrategy
 
 __all__ = [
-    "Strategy",
     "BudgetTooSmall",
-    "TruncateStrategy",
-    "TopKStrategy",
-    "SentencePruneStrategy",
     "DedupeStrategy",
+    "SentencePruneStrategy",
+    "Strategy",
     "SummarizeStrategy",
+    "TopKStrategy",
+    "TruncateStrategy",
 ]
