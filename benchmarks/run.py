@@ -19,6 +19,7 @@ import json
 import statistics
 from pathlib import Path
 
+from benchmarks.dataset import make_dataset
 from context_compress import Compressor
 from context_compress.fidelity import FidelityEvaluator
 from context_compress.strategies import (
@@ -28,8 +29,6 @@ from context_compress.strategies import (
     TopKStrategy,
     TruncateStrategy,
 )
-
-from benchmarks.dataset import make_dataset
 
 BUDGET = 120  # tokens of context — deliberately tight to force real choices
 
@@ -89,7 +88,7 @@ def main() -> int:
 
     baseline_tokens = rows["no-compression"]["mean_tokens"]
 
-    print(f"\n=== context-compress benchmark ===")
+    print("\n=== context-compress benchmark ===")
     print(f"{len(items)} RAG scenarios · budget {BUDGET} tokens · offline, seed 42\n")
     print(f"{'strategy':20} {'tokens':>8} {'saved':>8} {'recall':>8}")
     print("-" * 46)
