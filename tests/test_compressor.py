@@ -114,3 +114,21 @@ def test_fidelity_f1_computed():
     result = Compressor([TruncateStrategy()], budget=10_000).compress("q", chunks)
     report = FidelityEvaluator().evaluate(result, ["Alpha fact"])
     assert 0.0 <= report.f1 <= 1.0
+
+
+def test_fidelity_fuzzy_requires_whole_words_not_substrings():
+    """Fuzzy mode matched each content word as a bare substring, so a fact whose
+    words appear nowhere could still score as present — 'cat' satisfied by
+    'catalogue'. Recall is the headline number here; it has to be honest."""
+    chunks = Compressor.chunks_from_passages(["The catalogue satisfies the format requirements."])
+    result = Compressor([TruncateStrategy()], budget=10_000).compress("q", chunks)
+    report = FidelityEvaluator(fuzzy=True).evaluate(result, ["cat sat mat"])
+    assert report.recall == 0.0
+    assert report.missing == ["cat sat mat"]
+
+
+def test_fidelity_fuzzy_still_matches_genuinely_present_words():
+    chunks = Compressor.chunks_from_passages(["The catalogue satisfies the format requirements."])
+    result = Compressor([TruncateStrategy()], budget=10_000).compress("q", chunks)
+    report = FidelityEvaluator(fuzzy=True).evaluate(result, ["format catalogue"])
+    assert report.recall == 1.0
