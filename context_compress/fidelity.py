@@ -83,4 +83,9 @@ class FidelityEvaluator:
         words = [w for w in norm_fact.split() if len(w) > 2]
         if not words:
             return norm_fact in compressed
-        return all(w in compressed for w in words)
+        # Whole-word containment, not substring: "cat" must not be satisfied by
+        # "catalogue". A plain ``w in compressed`` let a fact whose words appear
+        # nowhere in the surviving text count as present, which inflated recall —
+        # the one number this module exists to report honestly.
+        present = set(compressed.split())
+        return all(w in present for w in words)
