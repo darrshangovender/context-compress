@@ -14,9 +14,11 @@ QUERY = "What happened to the postgres query latency?"
 PASSAGES = [
     "The quarterly planning meeting moved to the first Tuesday of each month.",
     "The postgres deployment pipeline runs nightly and publishes to the registry.",
-    "During the postgres performance review the team examined the index path. "
-    "The p99 query latency fell to 45ms after the index rebuild. "
-    "Follow-up monitoring confirmed the improvement held for a week.",
+    (
+        "During the postgres performance review the team examined the index path. "
+        "The p99 query latency fell to 45ms after the index rebuild. "
+        "Follow-up monitoring confirmed the improvement held for a week."
+    ),
     "The postgres deployment pipeline runs nightly and publishes to the registry.",  # dup
     "Historically the index configuration was managed by hand before automation.",
     "Parking permits must be renewed annually through the facilities portal.",
