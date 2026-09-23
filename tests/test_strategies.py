@@ -85,7 +85,7 @@ def test_truncate_keeps_head_first():
     # Budget fits roughly one chunk (~43 tokens each), so the head survives and
     # the tail does not.
     chunks = ctx("first " * 30, "second " * 30, "third " * 30)
-    result = TruncateStrategy().compress("q", chunks, budget=50)
+    TruncateStrategy().compress("q", chunks, budget=50)
     assert chunks[0].kept
     assert not chunks[-1].kept
 
@@ -119,7 +119,7 @@ def test_topk_keeps_relevant_over_head():
         "irrelevant filler about sports " * 8,
         "the postgres index rebuild fixed the latency problem " * 3,
     )
-    result = TopKStrategy().compress("postgres index latency", chunks, budget=45)
+    TopKStrategy().compress("postgres index latency", chunks, budget=45)
     assert chunks[2].kept, "top-k must beat truncation on relevance"
 
 
@@ -171,7 +171,7 @@ def test_jaccard_disjoint_is_zero():
 def test_dedupe_removes_exact_duplicate():
     dup = "The migration completed successfully after the retry logic was fixed."
     chunks = ctx(dup, "Unrelated distinct content about something else entirely.", dup)
-    result = DedupeStrategy().compress("q", chunks, budget=10_000)
+    DedupeStrategy().compress("q", chunks, budget=10_000)
     assert chunks[0].kept and not chunks[2].kept
     assert chunks[2].meta["dropped_reason"] == "near_duplicate"
 
