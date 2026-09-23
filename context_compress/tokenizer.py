@@ -25,10 +25,10 @@ def _encoder(model: str):
         return None
     try:
         return tiktoken.encoding_for_model(model)
-    except Exception:
+    except Exception:  # noqa: BLE001  any tiktoken failure must fall back, not propagate
         try:
             return tiktoken.get_encoding("cl100k_base")
-        except Exception:
+        except Exception:  # noqa: BLE001  last-resort fallback: return None, never raise
             return None
 
 
@@ -46,7 +46,7 @@ def count_tokens(text: str, model: str = "gpt-4o") -> int:
         return len(enc.encode(text))
     char_est = len(text) / _CHARS_PER_TOKEN
     word_est = len(text.split()) * 1.3
-    return max(1, int(round((char_est + word_est) / 2)))
+    return max(1, round((char_est + word_est) / 2))
 
 
 def truncate_to_tokens(text: str, max_tokens: int, model: str = "gpt-4o") -> str:
