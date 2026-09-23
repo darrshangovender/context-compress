@@ -96,7 +96,7 @@ class SummarizeStrategy(Strategy):
         sents = split_sentences(text)
         if len(sents) <= 1:
             return text
-        n_keep = max(1, int(round(len(sents) * self.condense_ratio)))
+        n_keep = max(1, round(len(sents) * self.condense_ratio))
         as_chunks = [Chunk(text=s, position=i) for i, s in enumerate(sents)]
         s_scores = self._sent_scorer.score(query, as_chunks)
         top = sorted(range(len(sents)), key=lambda i: s_scores[i], reverse=True)[:n_keep]
