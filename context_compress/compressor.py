@@ -62,4 +62,4 @@ class Compressor:
         ]
 
 
-__all__ = ["Compressor", "BudgetTooSmall"]
+__all__ = ["BudgetTooSmall", "Compressor"]
