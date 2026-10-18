@@ -54,7 +54,6 @@ logs/
 *.log
 
 # --- Benchmarks ---
-benchmarks/results.json
 
 # --- Docker ---
 docker-compose.override.yml

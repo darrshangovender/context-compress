@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import statistics
+import sys
 from pathlib import Path
 
 from benchmarks.dataset import make_dataset
@@ -56,6 +57,9 @@ def _pipelines():
 
 
 def main() -> int:
+    # Windows consoles default to cp1252; the report prints arrows and multiplication signs.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     items = make_dataset(n=60, seed=42)
     fuzzy_eval = FidelityEvaluator(fuzzy=True)
     exact_eval = FidelityEvaluator(fuzzy=False)
