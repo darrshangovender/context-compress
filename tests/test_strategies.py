@@ -153,7 +153,8 @@ def test_sentence_prune_compresses_within_chunk():
 
 def test_sentence_prune_min_sentences_honoured():
     chunks = ctx("Alpha one. Beta two. Gamma three. Delta four.")
-    result = SentencePruneStrategy(min_sentences=2).compress("nothing relevant", chunks, budget=1000)
+    strategy = SentencePruneStrategy(min_sentences=2)
+    result = strategy.compress("nothing relevant", chunks, budget=1000)
     assert "Alpha one." in result.text and "Beta two." in result.text
 
 

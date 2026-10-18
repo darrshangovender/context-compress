@@ -43,7 +43,7 @@ class TopKStrategy(Strategy):
 
         if compressible:
             scores = self.scorer.score(query, compressible)
-            for c, s in zip(compressible, scores):
+            for c, s in zip(compressible, scores, strict=True):
                 c.score = s
 
             ranked = sorted(compressible, key=lambda c: c.score or 0.0, reverse=True)

@@ -7,11 +7,11 @@ compression run can be serialised, logged, diffed, and replayed.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class Role(str, Enum):
+class Role(StrEnum):
     """Where a chunk sits in the prompt. Drives protection policy."""
 
     SYSTEM = "system"          # never compressed

@@ -29,8 +29,12 @@ _TOKEN_RE = re.compile(r"[a-z0-9]+")
 #: aggressive stoplist hurts on technical text where "not", "all", "between"
 #: change meaning materially.
 _STOP = frozenset(
-    ["a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "of", "to", "in", "on", "at", "for", "with", "by", "from", "as", "and", "or", "but", "if", "then", "than", "that", "this", "these", "those", "it", "its", "i", "you", "he", "she", "they", "we"]
-)
+    [
+        "a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "of", "to", "in",
+        "on", "at", "for", "with", "by", "from", "as", "and", "or", "but", "if", "then", "than",
+        "that", "this", "these", "those", "it", "its", "i", "you", "he", "she", "they", "we",
+    ]
+)  # fmt: skip
 
 
 def tokenize(text: str) -> list[str]:
@@ -77,7 +81,7 @@ class LexicalScorer:
                     df[term] += 1
 
         raw: list[float] = []
-        for doc, dl in zip(docs, lengths):
+        for doc, dl in zip(docs, lengths, strict=True):
             tf = Counter(doc)
             s = 0.0
             for term in q_terms:
@@ -134,7 +138,7 @@ class HybridScorer:
         lex = self._lex.score(query, chunks)
         pos = self._pos.score(query, chunks)
         w = self.lexical_weight
-        return [w * l + (1 - w) * p for l, p in zip(lex, pos)]
+        return [w * lx + (1 - w) * p for lx, p in zip(lex, pos, strict=True)]
 
 
 def _normalise(values: list[float]) -> list[float]:

@@ -59,7 +59,7 @@ class SummarizeStrategy(Strategy):
             return self._result(chunks)
 
         scores = self.scorer.score(query, compressible)
-        for c, s in zip(compressible, scores):
+        for c, s in zip(compressible, scores, strict=True):
             c.score = s
 
         # Tier each chunk, condensing the middle band.

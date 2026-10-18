@@ -69,7 +69,8 @@ def make_dataset(n: int = 60, seed: int = 42) -> list[BenchItem]:
 
         # Same-domain distractors: topically adjacent, do not contain the answer.
         distractors = [
-            f"The {system} deployment pipeline runs nightly and publishes artefacts to the registry.",
+            f"The {system} deployment pipeline runs nightly and "
+            "publishes artefacts to the registry.",
             f"Historically the {component} configuration was managed by hand before automation.",
             f"A separate {system} cluster serves the staging environment on smaller instances.",
         ]

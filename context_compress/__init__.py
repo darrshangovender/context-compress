@@ -23,7 +23,7 @@ from context_compress.strategies import (
 from context_compress.tokenizer import count_tokens
 from context_compress.types import Chunk, CompressionResult, FidelityReport, Role
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "BudgetTooSmall",

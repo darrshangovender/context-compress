@@ -5,9 +5,10 @@ from a sliding window, the same paragraph in a doc and its changelog, a FAQ
 answer duplicated across pages. Every copy after the first is pure token waste
 that also crowds out genuinely distinct evidence.
 
-Detection is MinHash-style Jaccard over token shingles — no embedding model, no
-network, deterministic. Exact-duplicate detection is a hash lookup; near-duplicate
-uses a similarity threshold.
+Detection is exact Jaccard similarity over hashed token shingles, compared pairwise
+against every chunk kept so far (O(n^2) in the number of chunks; there is no MinHash or
+LSH banding) — no embedding model, no network, deterministic. A chunk is dropped when
+its similarity to an earlier kept chunk reaches the threshold.
 """
 
 from __future__ import annotations

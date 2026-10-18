@@ -27,9 +27,10 @@ class SentencePruneStrategy(Strategy):
     Parameters
     ----------
     min_sentences
-        Always retain at least this many sentences from any surviving chunk,
-        taken in document order. Preserves enough local context that the kept
-        material still reads as prose.
+        Prefer to retain at least this many leading sentences from every chunk, in
+        document order, so the kept material still reads as prose. This is a priority,
+        not a guarantee: the token budget always wins, so if the pinned sentences
+        alone exceed the remaining budget the later ones are dropped without error.
     """
 
     name = "sentence_prune"
@@ -57,7 +58,7 @@ class SentencePruneStrategy(Strategy):
 
         # Guarantee the first `min_sentences` of each chunk survive by pinning
         # their score above anything the scorer can produce.
-        for idx, (ci, si, _) in enumerate(units):
+        for idx, (_, si, _text) in enumerate(units):
             if si < self.min_sentences:
                 scores[idx] = float("inf")
 

@@ -13,6 +13,8 @@ content, and reports the end-to-end result.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from context_compress.strategies.base import BudgetTooSmall, Strategy
 from context_compress.tokenizer import count_tokens
 from context_compress.types import Chunk, CompressionResult, Role
@@ -30,8 +32,15 @@ class Compressor:
         self.budget = budget
 
     def compress(self, query: str, chunks: list[Chunk]) -> CompressionResult:
+        """Compress ``chunks`` for ``query``. The caller's chunks are not modified.
+
+        Strategies write ``kept``, ``score`` and a rewritten ``text`` onto the chunks they
+        are given, so the pipeline works on copies: the same list can be compressed again
+        (with another budget or strategy) and always starts from the original text. Read
+        the outcome from ``result.chunks``.
+        """
         original = sum(count_tokens(c.text) for c in chunks)
-        working = chunks
+        working = [replace(c, meta=dict(c.meta)) for c in chunks]
 
         for strat in self.strategies:
             result = strat.compress(query, working, self.budget)

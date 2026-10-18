@@ -7,10 +7,15 @@ Compares every strategy (and the recommended pipeline) at a fixed token budget,
 reporting tokens saved alongside fact recall. A strategy that saves more but
 recalls less is not better — the table makes that trade explicit.
 
+Two recall columns are reported because the fuzzy check is generous: ``recall`` counts
+a fact as present when all its words appear anywhere in the compressed text, while
+``exact`` requires the fact's normalised text to appear as a contiguous substring.
+
 Run:
     python benchmarks/run.py
 
-Fully offline. Writes results.json.
+Fully offline (token counts use the built-in heuristic unless tiktoken is installed).
+Writes benchmarks/results.json.
 """
 
 from __future__ import annotations
@@ -20,7 +25,7 @@ import statistics
 from pathlib import Path
 
 from benchmarks.dataset import make_dataset
-from context_compress import Compressor
+from context_compress import Compressor, count_tokens
 from context_compress.fidelity import FidelityEvaluator
 from context_compress.strategies import (
     DedupeStrategy,
@@ -52,31 +57,31 @@ def _pipelines():
 
 def main() -> int:
     items = make_dataset(n=60, seed=42)
-    evaluator = FidelityEvaluator()
+    fuzzy_eval = FidelityEvaluator(fuzzy=True)
+    exact_eval = FidelityEvaluator(fuzzy=False)
     rows: dict[str, dict] = {}
 
     for name, strategies in _pipelines().items():
         ratios: list[float] = []
         recalls: list[float] = []
-        orig_tokens: list[int] = []
+        exact_recalls: list[float] = []
         comp_tokens: list[int] = []
 
         for item in items:
             chunks = Compressor.chunks_from_passages(item.passages)
             if strategies is None:
                 # Baseline: send everything, no compression.
-                total = sum(__import__("context_compress").count_tokens(p) for p in item.passages)
+                total = sum(count_tokens(p) for p in item.passages)
                 ratios.append(1.0)
                 recalls.append(1.0)
-                orig_tokens.append(total)
+                exact_recalls.append(1.0)
                 comp_tokens.append(total)
                 continue
 
             result = Compressor(strategies, budget=BUDGET).compress(item.query, chunks)
-            report = evaluator.evaluate(result, item.required_facts)
             ratios.append(result.ratio)
-            recalls.append(report.recall)
-            orig_tokens.append(result.original_tokens)
+            recalls.append(fuzzy_eval.evaluate(result, item.required_facts).recall)
+            exact_recalls.append(exact_eval.evaluate(result, item.required_facts).recall)
             comp_tokens.append(result.compressed_tokens)
 
         rows[name] = {
@@ -84,35 +89,42 @@ def main() -> int:
             "kept_ratio": round(statistics.mean(ratios), 4),
             "saved_pct": round(1 - statistics.mean(ratios), 4),
             "recall": round(statistics.mean(recalls), 4),
+            "recall_exact": round(statistics.mean(exact_recalls), 4),
         }
 
     baseline_tokens = rows["no-compression"]["mean_tokens"]
 
     print("\n=== context-compress benchmark ===")
     print(f"{len(items)} RAG scenarios · budget {BUDGET} tokens · offline, seed 42\n")
-    print(f"{'strategy':20} {'tokens':>8} {'saved':>8} {'recall':>8}")
-    print("-" * 46)
+    print(f"{'strategy':22} {'tokens':>8} {'saved':>7} {'recall':>8} {'exact':>8}")
+    print("-" * 57)
     for name, r in rows.items():
-        print(f"{name:20} {r['mean_tokens']:>8.1f} {r['saved_pct']:>7.0%} {r['recall']:>8.1%}")
+        print(
+            f"{name:22} {r['mean_tokens']:>8.1f} {r['saved_pct']:>7.0%} "
+            f"{r['recall']:>8.1%} {r['recall_exact']:>8.1%}"
+        )
 
-    # Best = highest savings among strategies that hold recall >= 0.95.
+    # Best = highest savings among strategies that hold recall >= 0.95 on BOTH checks.
     faithful = {
-        k: v for k, v in rows.items() if k != "no-compression" and v["recall"] >= 0.95
+        k: v
+        for k, v in rows.items()
+        if k != "no-compression" and min(v["recall"], v["recall_exact"]) >= 0.95
     }
     if faithful:
         best = max(faithful.items(), key=lambda kv: kv[1]["saved_pct"])
         print(
             f"\nBest faithful compressor: {best[0]} — "
-            f"{best[1]['saved_pct']:.0%} fewer tokens at {best[1]['recall']:.1%} recall"
+            f"{best[1]['saved_pct']:.0%} fewer tokens at {best[1]['recall_exact']:.1%} exact recall"
         )
-        print(
-            f"({baseline_tokens:.0f} → {best[1]['mean_tokens']:.0f} tokens per request)"
-        )
+        print(f"({baseline_tokens:.0f} → {best[1]['mean_tokens']:.0f} tokens per request)")
     else:
-        print("\nNo strategy held recall >= 0.95 at this budget.")
+        print("\nNo strategy held recall >= 0.95 on both checks at this budget.")
 
     out = Path(__file__).parent / "results.json"
-    out.write_text(json.dumps({"budget": BUDGET, "n_items": len(items), "rows": rows}, indent=2))
+    out.write_text(
+        json.dumps({"budget": BUDGET, "n_items": len(items), "rows": rows}, indent=2),
+        encoding="utf-8",
+    )
     print(f"\nwrote {out}")
     return 0
 
